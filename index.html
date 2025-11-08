@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario CBTA 62</title>
+    <link rel="stylesheet" href="style.css">
+    </head>
+<body>
+    <div class="sidebar">
+        <h2>CBTA 62</h2>
+        <ul>
+            <li data-section="logout-btn" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </li>
+            <li class="active" data-section="inventory-view">🛠️ Inventario</li>
+            <li data-section="loans-view">🚚 Préstamos Activos</li>
+            <li data-section="reports-view">📊 Reportes</li> 
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>Gestión de Herramientas</h1>
+            <div class="header-actions">
+                <button id="btn-add-tool" class="secondary-btn">+ Añadir Herramienta</button>
+                <button id="btn-registrar-prestamo">+ Registrar Préstamo</button>
+            </div>
+        </header>
+
+        <section class="content" id="inventory-view">
+            <h2>Inventario de Herramientas</h2>
+            
+            <div class="search-container">
+                <input type="text" id="inventory-search" placeholder="Buscar por nombre o categoría..." class="search-input">
+            </div>
+
+            <table>
+                <thead>
+                    <tr     
+                        <th>Herramienta</th>
+                        <th>Categoría</th>
+                        <th>Ubicación/Marca</th> <th>Stock Disp.</th> 
+                        <th>Stock Total</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                </tbody>
+            </table>
+        </section>
+
+        <section class="content hidden" id="loans-view">
+            <h2>Préstamos Activos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Préstamo</th>
+                        <th>Herramienta Prestada</th>
+                        <th>Marca Prestada</th>
+                        <th>Prestado a</th>
+                        <th>Fecha de Salida</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="loans-table-body">
+                </tbody>
+            </table>
+        </section>
+        
+        <section class="content hidden" id="reports-view">
+            <h2>📊 Resumen y Reportes del Inventario</h2>
+            
+            <h3>📝 Notas del Encargado (Observaciones)</h3>
+            <textarea id="report-notes-textarea" rows="5" placeholder="Escriba aquí cualquier observación, necesidad de compra o problema detectado en el inventario."></textarea>
+            
+            <div class="report-grid">
+                <div class="report-card total">
+                    <h3>Total de Herramientas Registradas</h3>
+                    <p id="report-total-tools">0</p>
+                </div>
+                <div class="report-card available">
+                    <h3>Total de Stock Disponible</h3>
+                    <p id="report-available-stock">0</p>
+                </div>
+                <div class="report-card loaned">
+                    <h3>Herramientas Prestadas (Activas)</h3>
+                    <p id="report-active-loans">0</p>
+                </div>
+                <div class="report-card total">
+                    <h3>Categorías Únicas</h3>
+                    <p id="report-unique-categories">0</p>
+                </div>
+            </div>
+            
+            <h3>Herramientas Más Prestadas</h3>
+            <table id="most-loaned-table">
+                <thead>
+                    <tr>
+                        <th>Herramienta</th>
+                        <th>Total Préstamos</th>
+                        <th>Stock Total</th>
+                    </tr>
+                </thead>
+                <tbody id="most-loaned-body">
+                </tbody>
+            </table>
+        </section>
+        
+    </div> <div class="modal" id="loanModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeLoanModal">&times;</span>
+            <h2>Registrar nuevo Préstamo</h2>
+            <form id="loanForm">
+              <div class="form-group">
+                 <label for="tool-select">Seleccionar Herramienta a Prestar</label>
+                 <select id="tool-select" name="tool-select" required>
+                    <option value="" disabled selected>Cargando herramientas...</option>
+                 </select>
+                <span id="tool-name-display" style="margin-top: 5px; font-weight: 600;"></span>
+            </div>
+                <div class="form-group">
+                    <label for="borrower">Prestado a (Nombre/Grupo)</label>
+                    <input type="text" id="borrower" name="borrower" required>
+                </div>
+                <div class="form-group">
+                    <label for="loan-date">Fecha de Salida</label>
+                    <input type="date" id="loan-date" name="loan-date" required>
+                </div>
+                <button type="submit" class="submit-btn">Confirmar Préstamo</button>
+            </form>
+        </div>
+    </div>
+
+<div class="modal" id="addToolModal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeToolModal">&times;</span>
+        <h2>Registrar Nueva Herramienta (Lote)</h2>
+        <form id="addToolForm">
+            
+            <div class="form-group new-tool-group" id="group-name">
+                <label for="new-tool-name">Nombre de Herramienta</label>
+                <input type="text" id="new-tool-name" name="new-tool-name" required> 
+            </div>
+            
+            <div class="form-group new-tool-group" id="group-category">
+                <label for="new-tool-category">Categoría</label>
+                <select id="new-tool-category" name="new-tool-category" required></select>
+            </div>
+
+            <div class="form-group">
+                <label for="new-tool-brand">Marca/Modelo</label>
+                <select id="new-tool-brand" name="new-tool-brand" required></select>
+            </div>
+            
+            <div class="form-group hidden" id="group-other-brand">
+                <label for="other-brand-input">Especifique otra Marca</label>
+                <input type="text" id="other-brand-input">
+            </div>
+
+            <div class="form-group">
+                <label for="new-tool-quantity">Cantidad a añadir (Lote)</label>
+                <input type="number" id="new-tool-quantity" name="new-tool-quantity" min="1" required>
+            </div>
+            
+            <button type="submit" class="submit-btn primary-btn">Guardar Lote de Herramienta</button>
+        </form>
+    </div>
+</div>
+
+    <script src="script.js"></script>
+</body>
+</html>

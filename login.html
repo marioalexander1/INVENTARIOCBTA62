@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Inventario CBTA 62</title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+    /* Estilos generales y fondo oscuro */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #2c3e50; /* Fondo azul oscuro/gris oscuro */
+        margin: 0;
+        color: #ecf0f1; /* Color de texto claro para el fondo */
+        overflow: hidden; /* Evita barras de desplazamiento si el contenido es grande */
+    }
+
+    /* Contenedor principal del Login (el "rectángulo" grande) */
+    .login-container {
+        display: flex; /* Para dividir en dos columnas */
+        background: #ffffff; /* Blanco para el contenedor principal */
+        border-radius: 12px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
+        width: 700px; /* Ancho total del contenedor */
+        max-width: 95%; /* Adaptable a pantallas más pequeñas */
+        overflow: hidden; /* Asegura que las esquinas redondeadas funcionen bien con los sub-contenedores */
+        min-height: 400px; /* Altura mínima para que no se vea comprimido */
+    }
+
+    /* Lado Izquierdo (Diseño Gráfico / Marca) */
+    .login-left {
+        flex: 1; /* Ocupa la mitad del espacio */
+        background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%); /* Degradado azul-verde */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        color: white;
+        text-align: center;
+    }
+    .login-left h3 {
+        font-size: 2em;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    .login-left p {
+        font-size: 1.1em;
+        line-height: 1.5;
+        opacity: 0.9;
+    }
+    .login-left .icon {
+        font-size: 4em; /* Icono grande */
+        margin-bottom: 20px;
+        /* Si usas Font Awesome u otro, aquí iría la clase */
+        /* Por ahora, un simple texto */
+        content: "🔒"; 
+        display: block; /* Para centrarlo */
+    }
+
+    /* Lado Derecho (Formulario de Login) */
+    .login-right {
+        flex: 1; /* Ocupa la otra mitad del espacio */
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: #ffffff; /* Fondo blanco para el formulario */
+    }
+    .login-right h2 {
+        color: #2c3e50; /* Color de texto para el título del formulario */
+        margin-bottom: 30px;
+        font-size: 1.8em;
+        text-align: center;
+    }
+
+    /* Campos de Input */
+    .login-right input {
+        width: 100%;
+        padding: 14px 15px;
+        margin-bottom: 20px;
+        border: 1px solid #dcdcdc; /* Borde más claro */
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 1em;
+        color: #333;
+        background-color: #f8f8f8; /* Un poco de gris en el fondo del input */
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .login-right input::placeholder {
+        color: #95a5a6; /* Color para el placeholder */
+    }
+    .login-right input:focus {
+        border-color: #3498db; /* Azul al enfocar */
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        outline: none;
+        background-color: #fff;
+    }
+
+    /* Botón de Entrada */
+    .login-right button {
+        background-color: #3498db; /* Azul principal para el botón */
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 1.15em;
+        font-weight: bold;
+        transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s;
+        margin-top: 10px;
+    }
+    .login-right button:hover {
+        background-color: #2980b9; /* Azul más oscuro al pasar el ratón */
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+    .login-right button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 5px rgba(52, 152, 219, 0.4);
+    }
+
+    /* Mensaje de Error */
+    #error-message {
+        color: #e74c3c; /* Rojo para errores */
+        margin-top: 15px;
+        font-weight: bold;
+        text-align: center;
+        min-height: 20px;
+        font-size: 0.95em;
+    }
+
+    /* Media Queries para responsividad (cuando la pantalla es pequeña) */
+    @media (max-width: 768px) {
+        .login-container {
+            flex-direction: column; /* Apila las columnas verticalmente */
+            width: 90%;
+            min-height: unset; /* Permite que la altura se ajuste al contenido */
+        }
+        .login-left, .login-right {
+            padding: 30px 20px; /* Ajusta el padding */
+            flex: unset; /* Desactiva flex para que no tomen todo el ancho */
+            width: 100%;
+        }
+        .login-left {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .login-right {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <span class="icon">🔒</span> <h3>Bienvenido al<br>Inventario CBTA 62</h3>
+            <p>Tu sistema de gestión de herramientas seguro.</p>
+        </div>
+        <div class="login-right">
+            <h2>Acceso Requerido</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Usuario" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <p id="error-message"></p>
+        </div>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>
