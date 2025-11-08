@@ -634,3 +634,4 @@ document.addEventListener("DOMContentLoaded", () => {
     populateToolSelect(); // Inicializa el selector de PRÉSTAMO.
     populateAddLotSelect(); // Inicializa el selector de AÑADIR LOTE.
 });
+/*hola*/
