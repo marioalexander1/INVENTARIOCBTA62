@@ -589,7 +589,8 @@ addToolForm.addEventListener("submit", (e) => {
         localStorage.removeItem('loggedIn'); 
         // Si hay un login.html, la siguiente línea te redirigirá.
         // window.location.href = 'login.html'; 
-        alert("Sesión cerrada. Los datos persisten localmente.");
+        alert("Sesión cerrada.");
+        window.location.href = 'login.html';
     };
 
     if (logoutButton) {
