@@ -1,14 +1,3 @@
-// AÑADIDO: Lógica de protección de Login. Se ejecuta ANTES de que el DOM cargue.
-const isLoggedIn = localStorage.getItem('loggedIn');
-
-// Si no hay indicador de sesión o no es 'true', redirige a la página de login
-if (isLoggedIn !== 'true') {
-    // Si estás usando una página de login, descomenta la siguiente línea:
-    // window.location.href = 'login.html'; 
-}
-// -------------------------------------------------------------
-
-
 // --- VERIFICACIÓN CRÍTICA DE CARGA ---
 console.log("El script se está ejecutando correctamente."); 
 // ------------------------------------
@@ -21,43 +10,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // --- Data Base (Estructura Modular con stockLots) ---
     let inventory = JSON.parse(localStorage.getItem('inventory')) || [
-        { 
-            id: 101, 
-            name: "Taladro Inalámbrico", 
-            category: "Eléctrica", 
-            location: "Taller A", 
-            stockLots: [
-                { lotId: 1, brand: "DeWalt", total: 2, available: 1 }, // Stock bajo
-                { lotId: 2, brand: "Makita", total: 1, available: 1 }
-            ]
-        },
-        { 
-            id: 102, 
-            name: "Pala Cuadrada", 
-            category: "Jardinería", 
-            location: "Bodega Ext.", 
-            stockLots: [
-                { lotId: 3, brand: "Truper", total: 5, available: 4 }, // Stock normal
-                { lotId: 4, brand: "Ferca", total: 3, available: 0 } // Stock agotado en un lote
-            ]
-        },
-        { 
-            id: 103, 
-            name: "Multímetro Digital", 
-            category: "Medición", 
-            location: "Laboratorio", 
-            stockLots: [
-                { lotId: 5, brand: "Fluke", total: 1, available: 0 }, // Stock agotado
-            ]
-        },
+        
     ];
 
     let activeLoans = JSON.parse(localStorage.getItem('activeLoans')) || [
-        { loanId: 1, id: 101, name: "Taladro Inalámbrico", brand: "DeWalt", lotId: 1, borrower: "Taller Mecánica", loanDate: "2025-11-01", loanedOn: "01/11/2025" },
-        { loanId: 2, id: 103, name: "Multímetro Digital", brand: "Fluke", lotId: 5, borrower: "Laboratorio", loanDate: "2025-11-03", loanedOn: "03/11/2025" }
     ];
 
-    // NUEVO: Almacenamiento de notas de reporte
+    // Almacenamiento de notas de reporte
     let reportNotes = localStorage.getItem('reportNotes') || "Escriba aquí sus comentarios sobre el inventario...";
 
     let nextToolId = inventory.length > 0 ? Math.max(...inventory.map(t => t.id)) + 1 : 104;
@@ -102,8 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const newToolBrandSelect = document.getElementById("new-tool-brand");
     const otherBrandGroup = document.getElementById("group-other-brand");
     const otherBrandInput = document.getElementById("other-brand-input");
-    const newToolGroups = document.querySelectorAll(".new-tool-group"); // Se mantiene, aunque ya no ocultamos nada
     
+    // NUEVAS Referencias para el selector de Añadir Lote
+    const addLotToolSelect = document.getElementById("add-lot-tool-select");
+    const toolDetailsGroups = document.querySelectorAll(".tool-details-group"); 
+    // Nota: Eliminada la referencia newToolGroups, ya no es necesaria
+
     // Referencias para la funcionalidad de Préstamo
     const toolSelect = document.getElementById("tool-select"); 
     const toolNameDisplay = document.getElementById("tool-name-display");
@@ -118,18 +81,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportUniqueCategories = document.getElementById("report-unique-categories");
     const mostLoanedBody = document.getElementById("most-loaned-body"); 
     
-    // NUEVO: Referencia para el textarea de notas
+    // Referencia para el textarea de notas
     const reportNotesTextarea = document.getElementById("report-notes-textarea");
 
     // Referencia del botón de Cerrar Sesión
-    const logoutButton = document.getElementById("logout-btn");
+    const logoutButton = document.getElementById("logout-btn"); 
+    
+    // Lógica para alternar visibilidad de campos de Nombre/Categoría
+    if (addLotToolSelect) {
+        addLotToolSelect.addEventListener('change', () => {
+            const isNewTool = addLotToolSelect.value === "";
+            
+            toolDetailsGroups.forEach(group => {
+                if (isNewTool) {
+                    group.classList.remove('hidden');
+                } else {
+                    group.classList.add('hidden');
+                }
+            });
 
+            // Hacemos que los campos sean requeridos SÓLO si se va a crear una herramienta nueva
+            newToolNameInput.required = isNewTool;
+            newToolCategorySelect.required = isNewTool;
+        });
+    }
 
     // Función para guardar los datos en localStorage
     const saveData = () => {
         localStorage.setItem('inventory', JSON.stringify(inventory));
         localStorage.setItem('activeLoans', JSON.stringify(activeLoans));
-        // NUEVO: Guardar notas
+        // Guardar notas
         if (reportNotesTextarea) {
             localStorage.setItem('reportNotes', reportNotesTextarea.value); 
         }
@@ -164,7 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
         inventoryTableBody.innerHTML = ''; 
         
         if (toolsArray.length === 0) {
-            // Se ajusta el colspan a 4 (de 5) ya que eliminamos la columna ID
             inventoryTableBody.innerHTML = '<tr><td colspan="4">No hay herramientas registradas que coincidan con la búsqueda.</td></tr>'; 
             saveData(); 
             return;
@@ -174,14 +154,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const totalStock = tool.stockLots.reduce((sum, lot) => sum + lot.total, 0);
             const availableStock = tool.stockLots.reduce((sum, lot) => sum + lot.available, 0);
 
-            // NUEVO: Lógica de cambio de color
+           // STOCK
             let statusClass;
             if (availableStock === 0) {
                 statusClass = 'loaned'; // Rojo: Agotado
-            } else if (availableStock <= 2) {
-                statusClass = 'low-stock'; // Naranja: Stock bajo (<= 2)
+            } else if (availableStock < totalStock) { // <--- NUEVA LÓGICA: Si disponible < total (falta al menos 1)
+                statusClass = 'low-stock'; // Naranja: Falta Stock
             } else {
-                statusClass = 'stock'; // Verde: Disponible
+                statusClass = 'stock'; // Verde: Stock COMPLETO (Disponible = Total)
             }
 
             const row = document.createElement("tr");
@@ -207,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const categoryLower = tool.category.toLowerCase();
             const brandsMatch = tool.stockLots.some(lot => lot.brand.toLowerCase().includes(searchTerm));
 
-            // Permite seguir buscando por ID aunque no se muestre
             return (
                 idString.includes(searchTerm) ||
                 nameLower.includes(searchTerm) ||
@@ -286,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const loanCountMap = {};
         activeLoans.forEach(loan => {
-            // Se usa el ID para agrupar, ya que es único para la herramienta
             const toolKey = `${loan.id} - ${loan.name}`; 
             loanCountMap[toolKey] = (loanCountMap[toolKey] || 0) + 1;
         });
@@ -294,7 +272,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const mostLoanedData = Object.keys(loanCountMap).map(toolKey => {
             const [toolId] = toolKey.split(' - ');
             const tool = inventory.find(t => t.id == toolId);
-            // Se añade una comprobación simple para evitar errores si la herramienta no se encuentra (raro, pero posible si la base de datos se manipula manualmente)
             const totalStock = tool ? tool.stockLots.reduce((sum, lot) => sum + lot.total, 0) : 0; 
             
             return {
@@ -325,54 +302,97 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-// --- 4. Registro de NUEVA HERRAMIENTA ---
-addToolForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = newToolNameInput.value.trim(); 
-    const category = newToolCategorySelect.value;
-    let brand = newToolBrandSelect.value;
-    // Se valida que el input exista antes de intentar obtener su valor.
-    const quantityInput = document.getElementById("new-tool-quantity");
-    const quantity = quantityInput ? parseInt(quantityInput.value) : NaN;
+    // Función para poblar el selector de AÑADIR LOTE
+    const populateAddLotSelect = () => {
+        if (!addLotToolSelect) return;
+        
+        // La primera opción DEBE ser la opción vacía para crear nueva herramienta
+        addLotToolSelect.innerHTML = '<option value="" selected>--- Crear Nueva Herramienta ---</option>';
 
-
-    if (brand === 'OTHER') {
-        brand = otherBrandInput.value.trim();
-    }
-    
-    if (isNaN(quantity) || quantity <= 0) {
-        alert("La cantidad debe ser un número entero mayor a cero.");
-        return;
-    }    
-    // Validamos el nombre/categoría solo por precaución, aunque el HTML los marca como required.
-    if (!name || !category) {
-        alert("Por favor, complete el Nombre y la Categoría para registrar una nueva herramienta.");
-        return;
-    }
-    
-    const newTool = {
-        id: nextToolId++,
-        name: name,
-        category: category,
-        location: 'N/A',
-        stockLots: [{
-            lotId: nextLotId++,
-            brand: brand,
-            total: quantity,
-            available: quantity,
-        }]
+        inventory.forEach(tool => {
+            const totalStock = tool.stockLots.reduce((sum, lot) => sum + lot.total, 0);
+            
+            // Listamos todas las herramientas para poder añadirles stock
+            addLotToolSelect.innerHTML += `<option value="${tool.id}">✅ ${tool.name} (Stock: ${totalStock})</option>`;
+        });
     };
 
-    inventory.push(newTool);
-    alert(`✅ Éxito: Nueva herramienta "${name}" (ID: ${newTool.id}) registrada con ${quantity} unidades de la marca "${brand}".`);
     
-    closeToolModalHandler();
-    renderInventory(); 
-    renderReports(); 
-    populateToolSelect(); // IMPORTANTE: Recargar el selector de préstamo con la nueva herramienta
-});
+    // --- 4. Registro de NUEVA HERRAMIENTA / AÑADIR LOTE ---
+    addToolForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        // Obtenemos el ID del selector. Será "" si se elige 'crear nueva herramienta'.
+        const toolId = addLotToolSelect ? addLotToolSelect.value : "";
+        
+        const name = newToolNameInput.value.trim(); 
+        const category = newToolCategorySelect.value;
+        let brand = newToolBrandSelect.value;
+        const quantityInput = document.getElementById("new-tool-quantity");
+        const quantity = quantityInput ? parseInt(quantityInput.value) : NaN;
 
-    // --- 5. Funciones de Selector y Validación de Stock ---
+
+        if (brand === 'OTHER') {
+            brand = otherBrandInput.value.trim();
+        }
+        
+        if (isNaN(quantity) || quantity <= 0) {
+            alert("La cantidad debe ser un número entero mayor a cero.");
+            return;
+        }
+
+        if (toolId !== "") {
+            // --- LÓGICA: AÑADIR NUEVO LOTE A HERRAMIENTA EXISTENTE ---
+            const existingTool = inventory.find(t => t.id === parseInt(toolId));
+            
+            if (!existingTool) {
+                alert("❌ Error: Herramienta seleccionada no existe en el inventario.");
+                return;
+            }
+
+            // Crear el nuevo lote
+            const newLot = {
+                lotId: nextLotId++, 
+                brand: brand,
+                total: quantity,
+                available: quantity,
+            };
+            
+            existingTool.stockLots.push(newLot);
+
+            alert(`✅ Éxito: Se añadieron ${quantity} unidades (Marca: ${brand}) a "${existingTool.name}".`);
+
+        } else {
+            // --- LÓGICA: CREAR NUEVA HERRAMIENTA COMPLETA ---
+            if (!name || !category) {
+                alert("Por favor, complete el Nombre y la Categoría para registrar una nueva herramienta.");
+                return;
+            }
+            
+            const newTool = {
+                id: nextToolId++,
+                name: name,
+                category: category,
+                location: 'N/A', 
+                stockLots: [{
+                    lotId: nextLotId++,
+                    brand: brand,
+                    total: quantity,
+                    available: quantity,
+                }]
+            };
+
+            inventory.push(newTool);
+            alert(`✅ Éxito: Nueva herramienta "${name}" (ID: ${newTool.id}) registrada con ${quantity} unidades de la marca "${brand}".`);
+        }
+
+        closeToolModalHandler();
+        renderInventory(); 
+        renderReports(); 
+        populateToolSelect();    // Recargar el selector de PRÉSTAMO
+        populateAddLotSelect();  // Recargar este selector para la próxima vez
+    });
+
     
     // Función para poblar el selector con herramientas disponibles
     const populateToolSelect = () => {
@@ -412,7 +432,6 @@ addToolForm.addEventListener("submit", (e) => {
             toolNameDisplay.textContent = `Stock: ${availableStock}/${totalStock}`;
             
             if (availableStock <= 0) {
-                // Esto no debería pasar, pero como doble chequeo
                 toolNameDisplay.textContent = 'AGOTADO';
                 toolNameDisplay.style.color = '#e74c3c'; 
             } else {
@@ -433,7 +452,7 @@ addToolForm.addEventListener("submit", (e) => {
         // Se valida el toolId, que será NaN si no se seleccionó nada
         if (isNaN(toolId) || toolId <= 0 || !borrower || borrower.length === 0 || !loanDate || loanDate.length === 0) {
             alert("⚠️ Atención: Debe seleccionar una herramienta y completar correctamente el prestatario y la fecha."); 
-            return;
+            return; 
         }
 
         const toolIndex = inventory.findIndex(t => t.id === toolId);
@@ -465,7 +484,7 @@ addToolForm.addEventListener("submit", (e) => {
             id: toolToLoan.id,
             name: toolToLoan.name,
             brand: availableLot.brand, 
-            lotId: availableLot.lotId,  
+            lotId: availableLot.lotId,  
             borrower: borrower,
             loanDate: loanDate,
             loanedOn: new Date().toLocaleDateString('es-MX'),
@@ -494,8 +513,7 @@ addToolForm.addEventListener("submit", (e) => {
             if (lot && lot.available < lot.total) { 
                 lot.available += 1; 
             } else if (lot) {
-                // Mensaje de advertencia si se intenta devolver más del total
-                 console.warn(`Advertencia: Intento de devolución de lote que ya estaba en stock total (ID: ${loan.id}, Lote: ${loan.lotId}). No se incrementó el stock disponible.`)
+                console.warn(`Advertencia: Intento de devolución de lote que ya estaba en stock total (ID: ${loan.id}, Lote: ${loan.lotId}). No se incrementó el stock disponible.`)
             }
         }
 
@@ -518,13 +536,27 @@ addToolForm.addEventListener("submit", (e) => {
         toolNameDisplay.textContent = '';
     };
 
+    // Función de limpieza/cierre del modal de Añadir Lote/Herramienta (CORREGIDA)
     const closeToolModalHandler = () => {
         addToolModal.style.display = "none";
         addToolForm.reset();
+        
+        // Vuelve a mostrar los campos de Nombre/Categoría (por defecto: crear nueva herramienta)
+        if (toolDetailsGroups) {
+            toolDetailsGroups.forEach(group => group.classList.remove('hidden'));
+        }
+        
+        // Vuelve a establecer la opción "Crear Nueva Herramienta" en el selector de lote
+        if (addLotToolSelect) {
+            addLotToolSelect.value = ""; 
+        }
+
+        // Asegura que los campos de nueva herramienta sean requeridos al cerrar.
+        newToolNameInput.required = true;
+        newToolCategorySelect.required = true;
+
+        // Oculta el campo de "Otra Marca"
         otherBrandGroup.classList.add('hidden');
-        newToolGroups.forEach(group => group.classList.remove('hidden')); 
-        newToolNameInput.setAttribute('required', 'required');
-        newToolCategorySelect.setAttribute('required', 'required');
     }
     
     // Abrir Modales
@@ -587,8 +619,6 @@ addToolForm.addEventListener("submit", (e) => {
     // --- 9. Manejo de Cerrar Sesión ---
     const handleLogout = () => {
         localStorage.removeItem('loggedIn'); 
-        // Si hay un login.html, la siguiente línea te redirigirá.
-        // window.location.href = 'login.html'; 
         alert("Sesión cerrada.");
         window.location.href = 'login.html';
     };
@@ -601,5 +631,6 @@ addToolForm.addEventListener("submit", (e) => {
     renderInventory();
     renderActiveLoans();
     renderReports(); 
-    populateToolSelect(); // Inicializa el selector al cargar la página.
+    populateToolSelect(); // Inicializa el selector de PRÉSTAMO.
+    populateAddLotSelect(); // Inicializa el selector de AÑADIR LOTE.
 });

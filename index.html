@@ -142,35 +142,42 @@
     <div class="modal-content">
         <span class="close-btn" id="closeToolModal">&times;</span>
         <h2>Registrar Nueva Herramienta (Lote)</h2>
-        <form id="addToolForm">
-            
-            <div class="form-group new-tool-group" id="group-name">
-                <label for="new-tool-name">Nombre de Herramienta</label>
-                <input type="text" id="new-tool-name" name="new-tool-name" required> 
-            </div>
-            
-            <div class="form-group new-tool-group" id="group-category">
-                <label for="new-tool-category">Categoría</label>
-                <select id="new-tool-category" name="new-tool-category" required></select>
-            </div>
 
-            <div class="form-group">
-                <label for="new-tool-brand">Marca/Modelo</label>
-                <select id="new-tool-brand" name="new-tool-brand" required></select>
-            </div>
-            
-            <div class="form-group hidden" id="group-other-brand">
-                <label for="other-brand-input">Especifique otra Marca</label>
-                <input type="text" id="other-brand-input">
-            </div>
+         <form id="addToolForm">
+             <div class="form-group" id="group-tool-select">
+             <label for="add-lot-tool-select">Seleccionar Herramienta Existente </label>
+           <select id="add-lot-tool-select">
+            <option value="" selected>--- Crear Nueva Herramienta ---</option>
+            </select>
+    </div>
+    
+    <div class="form-group tool-details-group" id="group-name">
+        <label for="new-tool-name">Nombre de Herramienta</label>
+        <input type="text" id="new-tool-name" name="new-tool-name"> 
+    </div>
+    
+    <div class="form-group tool-details-group" id="group-category">
+        <label for="new-tool-category">Categoría</label>
+        <select id="new-tool-category" name="new-tool-category"></select>
+    </div>
 
-            <div class="form-group">
-                <label for="new-tool-quantity">Cantidad a añadir (Lote)</label>
-                <input type="number" id="new-tool-quantity" name="new-tool-quantity" min="1" required>
-            </div>
-            
-            <button type="submit" class="submit-btn primary-btn">Guardar Lote de Herramienta</button>
-        </form>
+    <div class="form-group">
+        <label for="new-tool-brand">Marca/Modelo</label>
+        <select id="new-tool-brand" name="new-tool-brand" required></select>
+    </div>
+    
+    <div class="form-group hidden" id="group-other-brand">
+        <label for="other-brand-input">Especifique otra Marca</label>
+        <input type="text" id="other-brand-input">
+    </div>
+
+    <div class="form-group">
+        <label for="new-tool-quantity">Cantidad a añadir (Lote)</label>
+        <input type="number" id="new-tool-quantity" name="new-tool-quantity" min="1" required>
+    </div>
+    
+    <button type="submit" class="submit-btn primary-btn">Guardar Lote de Herramienta</button>
+</form>
     </div>
 </div>
 
